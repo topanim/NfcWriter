@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.nfc.FormatException
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
@@ -11,14 +12,11 @@ import android.nfc.NfcAdapter
 import android.nfc.NfcManager
 import android.nfc.Tag
 import android.nfc.tech.Ndef
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
-import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,15 +25,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,11 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.whatrushka.nfc_writer.ui.theme.NfcWriterTheme
 import java.io.IOException
+import java.security.AccessController.getContext
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var nfcAdapter: NfcAdapter
@@ -59,13 +55,20 @@ class MainActivity : ComponentActivity() {
 
         val adapter = NfcAdapter.getDefaultAdapter(this)
 
+        val pm: PackageManager = packageManager
+        if (pm.hasSystemFeature(PackageManager.FEATURE_NFC)) {
+            Log.d("m", "Has NFC functionality")
+        } else {
+            Log.d("m", "Has No NFC functionality")
+        }
+
         nfcAdapter = if (adapter != null) {
             adapter
         } else {
-            val nfcManager = (getSystemService(Context.NFC_SERVICE) as NfcManager)
+            val nfcManager = getSystemService(Context.NFC_SERVICE) as NfcManager
             nfcManager.defaultAdapter
         }
-        
+
         pendingIntent = PendingIntent.getActivity(
             this, 0,
             Intent(this, javaClass)
