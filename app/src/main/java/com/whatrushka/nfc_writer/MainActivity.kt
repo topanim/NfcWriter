@@ -1,12 +1,14 @@
 package com.whatrushka.nfc_writer
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.nfc.FormatException
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
+import android.nfc.NfcManager
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.os.Build
@@ -18,6 +20,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,11 +54,18 @@ class MainActivity : ComponentActivity() {
     private lateinit var pendingIntent: PendingIntent
     private var tag: Tag? = null
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+        val adapter = NfcAdapter.getDefaultAdapter(this)
+
+        nfcAdapter = if (adapter != null) {
+            adapter
+        } else {
+            val nfcManager = (getSystemService(Context.NFC_SERVICE) as NfcManager)
+            nfcManager.defaultAdapter
+        }
+        
         pendingIntent = PendingIntent.getActivity(
             this, 0,
             Intent(this, javaClass)
@@ -70,75 +80,97 @@ class MainActivity : ComponentActivity() {
                     color = Color.White
                 ) {
                     val data = remember { mutableStateOf("") }
-
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
+                    Box(
+                        Modifier
                             .fillMaxSize()
                             .padding(16.dp)
                     ) {
-                        OutlinedTextField(
-                            value = data.value,
-                            onValueChange = { data.value = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedContainerColor = Color.Transparent,
-                                focusedLabelColor = Color.DarkGray,
-                                focusedTextColor = Color.DarkGray,
-                                unfocusedLabelColor = Color.Gray
-                            )
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Button(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.DarkGray
-                            ),
-                            onClick = {
-                                try {
-                                    if (tag == null) {
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            ERROR_DETECTED,
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    } else {
-                                        write(data.value, tag)
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            WRITE_SUCCESS,
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                } catch (e: IOException) {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        WRITE_ERROR,
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                    e.printStackTrace()
-                                } catch (e: FormatException) {
-                                    Toast.makeText(
-                                        this@MainActivity,
-                                        WRITE_ERROR,
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                    e.printStackTrace()
-                                }
-                            }
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.TopCenter)
                         ) {
                             Text(
-                                modifier = Modifier.padding(8.dp),
-                                text = "Прошить карту",
+                                text = "Terminal",
                                 style = TextStyle(
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 16.sp,
-                                    color = Color.White
-
+                                    fontWeight = FontWeight.W700,
+                                    fontSize = 26.sp,
+                                    color = Color.Black
                                 )
                             )
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = data.value,
+                                onValueChange = { data.value = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color.DarkGray,
+//                                unfocusedLabelColor = Color.DarkGray,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedContainerColor = Color.Transparent,
+                                    focusedLabelColor = Color.DarkGray,
+                                    focusedTextColor = Color.DarkGray,
+                                    unfocusedTextColor = Color.Gray,
+                                )
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Button(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.DarkGray
+                                ),
+                                onClick = {
+                                    try {
+                                        if (tag == null) {
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                ERROR_DETECTED,
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        } else {
+                                            write(data.value, tag)
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                WRITE_SUCCESS,
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    } catch (e: IOException) {
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            WRITE_ERROR,
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        e.printStackTrace()
+                                    } catch (e: FormatException) {
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            WRITE_ERROR,
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        e.printStackTrace()
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    modifier = Modifier.padding(8.dp),
+                                    text = "Прошить карту",
+                                    style = TextStyle(
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        color = Color.White
+
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -200,21 +232,5 @@ class MainActivity : ComponentActivity() {
         const val ERROR_DETECTED = "No NFC tag detected!"
         const val WRITE_SUCCESS = "Text written to the NFC tag successfully!"
         const val WRITE_ERROR = "Error during writing, is the NFC tag close enough to your device?"
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NfcWriterTheme {
-        Greeting("Android")
     }
 }
