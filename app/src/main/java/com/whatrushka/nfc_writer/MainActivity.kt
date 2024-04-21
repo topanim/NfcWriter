@@ -94,7 +94,7 @@ class MainActivity : ComponentActivity() {
                                 .align(Alignment.TopCenter)
                         ) {
                             Text(
-                                text = "Terminal",
+                                text = "Card firmware",
                                 style = TextStyle(
                                     fontWeight = FontWeight.W700,
                                     fontSize = 26.sp,
