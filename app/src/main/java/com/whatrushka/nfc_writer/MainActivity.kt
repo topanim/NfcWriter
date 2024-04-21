@@ -32,7 +32,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Snackbar
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -101,7 +100,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White
                 ) {
-                    val data = remember { mutableStateOf("") }
+                    val cardHash = remember { mutableStateOf("") }
                     val login = remember { mutableStateOf("") }
                     val password = remember { mutableStateOf("") }
                     val idUser = remember { mutableStateOf("") }
@@ -118,6 +117,7 @@ class MainActivity : ComponentActivity() {
                         sheetContent = {
                             RegSheet(
                                 idUser = idUser,
+                                cardHash = cardHash,
                                 sheetState = modalBottomSheetState
                             )
                         }
@@ -133,7 +133,7 @@ class MainActivity : ComponentActivity() {
                                     .align(Alignment.TopCenter)
                             ) {
                                 Text(
-                                    text = "Card firmware",
+                                    text = "Card Firmware",
                                     style = TextStyle(
                                         fontWeight = FontWeight.W700,
                                         fontSize = 26.sp,
@@ -150,8 +150,8 @@ class MainActivity : ComponentActivity() {
                                     .padding(16.dp)
                             ) {
                                 OutlinedTextField(
-                                    value = data.value,
-                                    onValueChange = { data.value = it },
+                                    value = cardHash.value,
+                                    onValueChange = { cardHash.value = it },
                                     modifier = Modifier.fillMaxWidth(),
                                     placeholder = {
                                         Text(text = "HASH карты")
@@ -181,7 +181,7 @@ class MainActivity : ComponentActivity() {
                                                     Toast.LENGTH_LONG
                                                 ).show()
                                             } else {
-                                                write(data.value, tag)
+                                                write(cardHash.value, tag)
                                                 Toast.makeText(
                                                     this@MainActivity,
                                                     WRITE_SUCCESS,
@@ -246,6 +246,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun RegSheet(
+        cardHash: MutableState<String>,
         modifier: Modifier = Modifier,
         idUser: MutableState<String>,
         sheetState: ModalBottomSheetState
@@ -298,9 +299,11 @@ class MainActivity : ComponentActivity() {
                         if (idUser.value.isNotBlank()) {
                             scope.launch {
                                 try {
-                                    api.add_card(idUser.value.toInt())
+                                    val hash = api.addCard(idUser.value.toInt())
+                                    cardHash.value = hash
                                     sheetState.hide()
                                 } catch (ex: Exception) {
+                                    Log.d("m", ex.stackTraceToString())
                                     Toast.makeText(context, "Ошибка", Toast.LENGTH_SHORT).show()
                                 }
                             }
