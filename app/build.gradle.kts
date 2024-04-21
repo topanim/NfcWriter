@@ -51,6 +51,14 @@ android {
 
 dependencies {
 
+    implementation("androidx.compose.material:material:1.6.5")
+
+    implementation(libs.ktor.logging)
+    implementation(libs.ktor.core)
+    implementation(libs.ktor.serialization)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.cio)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
