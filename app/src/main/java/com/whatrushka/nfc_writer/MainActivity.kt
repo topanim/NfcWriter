@@ -133,7 +133,7 @@ class MainActivity : ComponentActivity() {
                                     .align(Alignment.TopCenter)
                             ) {
                                 Text(
-                                    text = "Card Firmware",
+                                    text = "Прошивка карты",
                                     style = TextStyle(
                                         fontWeight = FontWeight.W700,
                                         fontSize = 26.sp,
